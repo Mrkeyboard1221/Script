@@ -1,4 +1,3 @@
--- Create the GUI
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -20,26 +19,31 @@ button.Selectable = true
 
 -- Define variables
 local collectiblesParent = workspace:WaitForChild("Collectibles")
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local teleportRadius = 50  
 local autoFarmEnabled = false
+
+local function getHumanoidRootPart()
+    local character = player.Character or player.CharacterAdded:Wait()
+    return character:WaitForChild("HumanoidRootPart")
+end
 
 -- Function to teleport to nearby tokens
 local function teleportToNearbyTokens()
     while autoFarmEnabled do
+        local humanoidRootPart = getHumanoidRootPart()
+
         for _, object in pairs(collectiblesParent:GetDescendants()) do
             if not autoFarmEnabled then return end  -- Stop if auto-farm is off
             
             if object.Name == "C" and object:IsA("Part") and object.Transparency < 0.5 then
                 local distance = (humanoidRootPart.Position - object.Position).Magnitude
                 if distance <= teleportRadius then
-                    humanoidRootPart.CFrame = object.CFrame * CFrame.new(0, 5, 0)
-                    task.wait(0.3)  -- Delay to prevent instant teleports
+                    humanoidRootPart.CFrame = object.CFrame * CFrame.new(0, -1.5, 0)  -- Adjusted position slightly inside the token
+                    task.wait(0.6)  -- Slower teleport speed
                 end
             end
         end
-        task.wait(0.5)  -- Wait before checking again
+        task.wait(0.8)  -- Slightly longer delay before scanning again
     end
 end
 
