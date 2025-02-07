@@ -1,0 +1,58 @@
+-- Create the GUI
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false  -- Keeps UI when respawning
+
+local button = Instance.new("TextButton")
+button.Parent = screenGui
+button.Size = UDim2.new(0, 200, 0, 50)
+button.Position = UDim2.new(0.5, -100, 0.5, -25)  -- Centered
+button.Text = "Auto-Farm: OFF"
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red for OFF
+button.TextScaled = true
+button.Font = Enum.Font.SourceSansBold
+button.Draggable = true
+button.Active = true
+button.Selectable = true
+
+-- Define variables
+local collectiblesParent = workspace:WaitForChild("Collectibles")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local teleportRadius = 50  
+local autoFarmEnabled = false
+
+-- Function to teleport to nearby tokens
+local function teleportToNearbyTokens()
+    while autoFarmEnabled do
+        for _, object in pairs(collectiblesParent:GetDescendants()) do
+            if not autoFarmEnabled then return end  -- Stop if auto-farm is off
+            
+            if object.Name == "C" and object:IsA("Part") and object.Transparency < 0.5 then
+                local distance = (humanoidRootPart.Position - object.Position).Magnitude
+                if distance <= teleportRadius then
+                    humanoidRootPart.CFrame = object.CFrame * CFrame.new(0, 5, 0)
+                    task.wait(0.3)  -- Delay to prevent instant teleports
+                end
+            end
+        end
+        task.wait(0.5)  -- Wait before checking again
+    end
+end
+
+-- Toggle Auto-Farm when button is clicked
+button.MouseButton1Click:Connect(function()
+    autoFarmEnabled = not autoFarmEnabled
+    
+    if autoFarmEnabled then
+        button.Text = "Auto-Farm: ON"
+        button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- Green for ON
+        teleportToNearbyTokens()
+    else
+        button.Text = "Auto-Farm: OFF"
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red for OFF
+    end
+end)
